@@ -82,7 +82,10 @@ const base = new Image();
 base.src = 'base-enio-nilto-nome.png';
 
 // Área da foto central (ajustável)
-const PHOTO_BOX = { x: 365, y: 285, w: 350, h: 510 };
+const PHOTO_BOX = { x: 332, y: 305, w: 416, h: 416 };
+const PHOTO_CX = PHOTO_BOX.x + PHOTO_BOX.w / 2;
+const PHOTO_CY = PHOTO_BOX.y + PHOTO_BOX.h / 2;
+const PHOTO_R = PHOTO_BOX.w / 2;
 
 // Área do nome
 const NAME_Y = 115;
@@ -125,31 +128,31 @@ function render() {
   if (photo) {
     const scale = baseScale * zoom;
     ctx.save();
-
-    const r = 28;
-    const x = PHOTO_BOX.x, y = PHOTO_BOX.y, w = PHOTO_BOX.w, h = PHOTO_BOX.h;
     ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.arc(PHOTO_CX, PHOTO_CY, PHOTO_R, 0, Math.PI * 2);
     ctx.closePath();
     ctx.clip();
 
     ctx.drawImage(photo, offsetX, offsetY, photo.width * scale, photo.height * scale);
     ctx.restore();
-  }
-  if (photo && !isDownloading) {
+
+    // white circular border like the reference
     ctx.save();
-    ctx.strokeStyle = 'rgba(255,255,255,.9)';
-    ctx.lineWidth = 3;
-    ctx.setLineDash([10,8]);
-    ctx.strokeRect(PHOTO_BOX.x, PHOTO_BOX.y, PHOTO_BOX.w, PHOTO_BOX.h);
+    ctx.beginPath();
+    ctx.arc(PHOTO_CX, PHOTO_CY, PHOTO_R, 0, Math.PI * 2);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 8;
+    ctx.stroke();
+    ctx.restore();
+  } else if (!isDownloading) {
+    // subtle helper circle before a photo is loaded
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(PHOTO_CX, PHOTO_CY, PHOTO_R, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(255,255,255,.85)';
+    ctx.lineWidth = 4;
+    ctx.setLineDash([12,8]);
+    ctx.stroke();
     ctx.restore();
   }
 
