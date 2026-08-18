@@ -82,7 +82,7 @@ const base = new Image();
 base.src = 'base-enio-nilto-nome.png';
 
 // Área da foto central (ajustável)
-const PHOTO_BOX = { x: 360, y: 285, w: 360, h: 505 };
+const PHOTO_BOX = { x: 365, y: 285, w: 350, h: 510 };
 
 // Área do nome
 const NAME_Y = 115;
@@ -95,6 +95,7 @@ let baseScale = 1;
 let offsetX = PHOTO_BOX.x;
 let offsetY = PHOTO_BOX.y;
 let dragging = false;
+let isDownloading = false;
 let lastX = 0, lastY = 0;
 
 function drawPlaceholder() {
@@ -124,10 +125,31 @@ function render() {
   if (photo) {
     const scale = baseScale * zoom;
     ctx.save();
+
+    const r = 28;
+    const x = PHOTO_BOX.x, y = PHOTO_BOX.y, w = PHOTO_BOX.w, h = PHOTO_BOX.h;
     ctx.beginPath();
-    ctx.rect(PHOTO_BOX.x, PHOTO_BOX.y, PHOTO_BOX.w, PHOTO_BOX.h);
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
     ctx.clip();
+
     ctx.drawImage(photo, offsetX, offsetY, photo.width * scale, photo.height * scale);
+    ctx.restore();
+  }
+  if (photo && !isDownloading) {
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,.9)';
+    ctx.lineWidth = 3;
+    ctx.setLineDash([10,8]);
+    ctx.strokeRect(PHOTO_BOX.x, PHOTO_BOX.y, PHOTO_BOX.w, PHOTO_BOX.h);
     ctx.restore();
   }
 
@@ -162,18 +184,23 @@ base.onload = render;
 render();
 
 fileInput.addEventListener('change', e => {
-  const f = e.target.files[0];
+  const f = e.target.files && e.target.files[0];
   if (!f) return;
-  const url = URL.createObjectURL(f);
-  const img = new Image();
-  img.onload = () => {
-    photo = img;
-    zoomInput.value = 100;
-    zoomLabel.textContent='Zoom 100%';
-    resetPhotoPosition();
-    URL.revokeObjectURL(url);
+
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      photo = img;
+      zoomInput.value = 100;
+      zoomLabel.textContent = 'Zoom 100%';
+      resetPhotoPosition();
+    };
+    img.onerror = () => alert('Não foi possível abrir essa foto. Tente usar JPG ou PNG.');
+    img.src = ev.target.result;
   };
-  img.src = url;
+  reader.onerror = () => alert('Não foi possível ler essa foto.');
+  reader.readAsDataURL(f);
 });
 
 nameInput.addEventListener('input', render);
@@ -239,11 +266,14 @@ downloadBtn.addEventListener('click', () => {
     alert('Envie uma foto antes de baixar.');
     return;
   }
+  isDownloading = true;
   render();
   const a = document.createElement('a');
   a.download = 'arte-enio-nilto-personalizada.png';
   a.href = canvas.toDataURL('image/png');
   a.click();
+  isDownloading = false;
+  render();
 });
 </script>
 </body>
