@@ -83,13 +83,13 @@ base.src = 'base-enio-nilto-circulo.png';
 
 // Círculo central para a foto
 const PHOTO_CX = 540;
-const PHOTO_CY = 510;
-const PHOTO_R = 205;
+const PHOTO_CY = 545;
+const PHOTO_R = 168;
 const PHOTO_BOX = { x: PHOTO_CX - PHOTO_R, y: PHOTO_CY - PHOTO_R, w: PHOTO_R * 2, h: PHOTO_R * 2 };
 
 // Nome no topo
 const NAME_X = 540;
-const NAME_Y = 105;
+const NAME_Y = 135;
 const NAME_MAX_WIDTH = 790;
 
 let photo = null;
@@ -108,7 +108,7 @@ function drawPlaceholder() {
 }
 
 function fitText(text, maxWidth) {
-  let size = 118;
+  let size = 108;
   ctx.font = `900 ${size}px Arial`;
   while (ctx.measureText(text).width > maxWidth && size > 42) {
     size -= 2;
