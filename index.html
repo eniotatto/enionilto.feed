@@ -21,7 +21,8 @@
   .btn { width:100%; border:0; border-radius:12px; padding:14px 16px; font-weight:700; font-size:16px; cursor:pointer; }
   .btn-primary { background:var(--red); color:#fff; }
   .btn-secondary { background:#111; color:#fff; }
-  input[type=file] { width:100%; }
+  input[type=file], input[type=text] { width:100%; }
+  input[type=text] { padding:12px 14px; border:1px solid #d8d8d8; border-radius:12px; font-size:16px; }
   input[type=range] { width:100%; accent-color:var(--red); }
   .row { display:flex; justify-content:space-between; gap:8px; align-items:center; }
   .hint { font-size:13px; color:#666; line-height:1.4; }
@@ -44,13 +45,19 @@
 
     <div class="panel">
       <div class="box">
-        <h2>1. Envie sua foto</h2>
+        <h2>1. Digite seu nome</h2>
+        <input id="nameInput" type="text" maxlength="22" placeholder="Ex.: CARLOS">
+        <p class="hint">O nome aparece no topo, acima de “vota e apoia!”.</p>
+      </div>
+
+      <div class="box">
+        <h2>2. Envie sua foto</h2>
         <input id="file" type="file" accept="image/*">
         <p class="hint">Sua foto fica apenas no seu aparelho. Ela não é enviada para servidor.</p>
       </div>
 
       <div class="box">
-        <div class="row"><h2 style="margin:0">2. Ajuste</h2><span id="zoomLabel" class="mini">Zoom 100%</span></div>
+        <div class="row"><h2 style="margin:0">3. Ajuste</h2><span id="zoomLabel" class="mini">Zoom 100%</span></div>
         <input id="zoom" type="range" min="100" max="320" value="100">
         <button id="center" class="btn btn-secondary" style="margin-top:10px">Centralizar foto</button>
         <p class="hint">Arraste a foto diretamente sobre a prévia para posicioná-la.</p>
@@ -69,6 +76,7 @@ const zoomInput = document.getElementById('zoom');
 const zoomLabel = document.getElementById('zoomLabel');
 const centerBtn = document.getElementById('center');
 const downloadBtn = document.getElementById('download');
+const nameInput = document.getElementById('nameInput');
 
 const base = new Image();
 base.src = 'base-enio-nilto-circulo.png';
@@ -78,6 +86,11 @@ const PHOTO_CX = 540;
 const PHOTO_CY = 510;
 const PHOTO_R = 205;
 const PHOTO_BOX = { x: PHOTO_CX - PHOTO_R, y: PHOTO_CY - PHOTO_R, w: PHOTO_R * 2, h: PHOTO_R * 2 };
+
+// Nome no topo
+const NAME_X = 540;
+const NAME_Y = 105;
+const NAME_MAX_WIDTH = 790;
 
 let photo = null;
 let zoom = 1;
@@ -92,6 +105,16 @@ function drawPlaceholder() {
   ctx.clearRect(0,0,canvas.width,canvas.height);
   ctx.fillStyle = '#f2f2f2';
   ctx.fillRect(0,0,canvas.width,canvas.height);
+}
+
+function fitText(text, maxWidth) {
+  let size = 118;
+  ctx.font = `900 ${size}px Arial`;
+  while (ctx.measureText(text).width > maxWidth && size > 42) {
+    size -= 2;
+    ctx.font = `900 ${size}px Arial`;
+  }
+  return size;
 }
 
 function render() {
@@ -129,6 +152,17 @@ function render() {
     ctx.stroke();
     ctx.restore();
   }
+
+  const rawName = (nameInput.value || '').trim();
+  if (rawName) {
+    const displayName = rawName.toUpperCase();
+    const fontSize = fitText(displayName, NAME_MAX_WIDTH);
+    ctx.font = `900 ${fontSize}px Arial`;
+    ctx.fillStyle = '#f6d54a';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(displayName, NAME_X, NAME_Y);
+  }
 }
 
 function resetPhotoPosition() {
@@ -164,6 +198,8 @@ fileInput.addEventListener('change', e => {
   reader.onerror = () => alert('Não foi possível ler essa foto.');
   reader.readAsDataURL(f);
 });
+
+nameInput.addEventListener('input', render);
 
 zoomInput.addEventListener('input', () => {
   if (!photo) return;
