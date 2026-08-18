@@ -82,7 +82,7 @@ const base = new Image();
 base.src = 'base-enio-nilto-nome.png';
 
 // Área da foto central (ajustável)
-const PHOTO_BOX = { x: 310, y: 255, w: 470, h: 530 };
+const PHOTO_BOX = { x: 360, y: 285, w: 360, h: 505 };
 
 // Área do nome
 const NAME_Y = 115;
@@ -129,10 +129,6 @@ function render() {
     ctx.clip();
     ctx.drawImage(photo, offsetX, offsetY, photo.width * scale, photo.height * scale);
     ctx.restore();
-  }
-
-  if (base.complete) {
-    ctx.drawImage(base, 0, 0, canvas.width, canvas.height);
   }
 
   const rawName = (nameInput.value || '').trim();
